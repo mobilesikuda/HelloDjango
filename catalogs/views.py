@@ -1,13 +1,14 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.template import loader
 from .models import Catalog
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import redirect
 from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CatalogSerializer
+from openpyxl import Workbook
 
 def catalogs(request):
 
@@ -33,6 +34,22 @@ def details(request, id):
     'myitem': myitem,
   }
   return HttpResponse(template.render(context, request))
+
+def SaveExcell(request):
+    wb = Workbook()
+    sheet = wb.active
+    sheet.title = "Пословицы"
+    catalog = mycatalogs = Catalog.objects.all()
+    i = 1
+    for elem in catalog:
+        sheet['A'+str(i)] = elem.name
+        sheet['B'+str(i)] = elem.title
+        i = i + 1
+    
+    wb.save('Catalogs.xlsx')
+    #return redirect("/catalogs")
+    return FileResponse(open("Catalogs.xlsx", "rb"))
+
 
 class CatalogAPI(APIView):
     def get(self, request, format=None):
