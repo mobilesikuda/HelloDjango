@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CatalogSerializer
 from openpyxl import Workbook
+import os
 
 def catalogs(request):
 
@@ -35,6 +36,25 @@ def details(request, id):
   }
   return HttpResponse(template.render(context, request))
 
+def UploadJson(request):
+    if request.method == "POST":
+        handle_uploaded_file(request.FILES['file_upload'])
+        return redirect("/catalogs/")
+    else:
+        if request.user.is_superuser:
+            template = loader.get_template('admin_catalog.html')
+            context = {}
+            return HttpResponse(template.render(context, request))
+        else: 
+            return redirect("/catalogs/")
+
+def handle_uploaded_file(f):
+    file = open(f"{f.name}", "wb+")
+    with file as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    os.remove(f"{f.name}")        
+
 def SaveExcell(request):
     wb = Workbook()
     sheet = wb.active
@@ -47,7 +67,6 @@ def SaveExcell(request):
         i = i + 1
     
     wb.save('Catalogs.xlsx')
-    #return redirect("/catalogs")
     return FileResponse(open("Catalogs.xlsx", "rb"))
 
 
