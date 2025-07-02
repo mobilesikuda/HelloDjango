@@ -10,6 +10,7 @@ from rest_framework import status
 from .serializers import CatalogSerializer
 from openpyxl import Workbook
 import os
+from django.conf import settings
 
 def catalogs(request):
 
@@ -49,11 +50,12 @@ def UploadJson(request):
             return redirect("/catalogs/")
 
 def handle_uploaded_file(f):
-    file = open(f"{f.name}", "wb+")
+    file = open(f"{settings.MEDIA_ROOT}/{f.name}", "wb+")
     with file as destination:
         for chunk in f.chunks():
             destination.write(chunk)
-    os.remove(f"{f.name}")        
+    file.closed
+    os.remove(f"{file.name}")        
 
 def SaveExcell(request):
     wb = Workbook()
