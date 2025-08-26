@@ -1,3 +1,4 @@
+import json
 from django.http import HttpResponse, FileResponse
 from django.template import loader
 from .models import Catalog
@@ -16,7 +17,7 @@ def catalogs(request):
 
   strFilter = str(request.GET.get("filter") or "")
 
-  mycatalogs = Catalog.objects.filter(Q(name__contains=strFilter) | Q(title__contains=strFilter)).order_by('name') 
+  mycatalogs = Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
 
   paginator = Paginator(mycatalogs, 10)  
   page_number = request.GET.get("page") or 1
@@ -49,12 +50,21 @@ def UploadJson(request):
         else: 
             return redirect("/catalogs/")
 
+#Загрузка json file [{'name':'', 'title':''}]
 def handle_uploaded_file(f):
     file = open(f"{settings.MEDIA_ROOT}/{f.name}", "wb+")
     with file as destination:
         for chunk in f.chunks():
             destination.write(chunk)
-    file.closed
+    file.close()
+
+    file = open(f"{settings.MEDIA_ROOT}/{f.name}", encoding='utf-8')
+    catalogs = json.load(file)
+    Catalog.objects.all().delete()
+    for elem in catalogs:
+        new_object = Catalog(name = elem['name'], title = elem['title'])
+        new_object.save()
+    file.close()    
     os.remove(f"{file.name}")        
 
 def SaveExcell(request):
