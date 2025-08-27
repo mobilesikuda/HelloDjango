@@ -17,7 +17,10 @@ def catalogs(request):
 
   strFilter = str(request.GET.get("filter") or "")
 
-  mycatalogs = Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
+  if request.get_host() == 'localhost':
+      mycatalogs = Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
+  else:    
+      mycatalogs = Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
 
   paginator = Paginator(mycatalogs, 10)  
   page_number = request.GET.get("page") or 1
