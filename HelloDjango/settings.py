@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ikpd&im=ucp$t^5a#=0i&rj2fs=ksz9^s#x0sjnq@s9kupvzmj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1"]
 
 
 # Application definition

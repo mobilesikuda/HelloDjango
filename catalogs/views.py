@@ -13,23 +13,29 @@ from openpyxl import Workbook
 import os
 from django.conf import settings
 
+def main(request):
+  template = loader.get_template('main.html')
+  return HttpResponse(template.render()) 
+
 def catalogs(request):
 
   strFilter = str(request.GET.get("filter") or "")
+  mycatalog = getCatalogByFilter(strFilter, request.get_host() )
 
-  if request.get_host() == 'localhost':
-      mycatalogs = Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
-  else:    
-      mycatalogs = Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
+#   if request.get_host() == 'localhost':
+#       mycatalogs = Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
+#   else:    
+#       mycatalogs = Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
 
-  paginator = Paginator(mycatalogs, 10)  
+  paginator = Paginator(mycatalog, 10)  
   page_number = request.GET.get("page") or 1
   page_mycatalogs = paginator.get_page(page_number)
   
   template = loader.get_template('all_catalog.html')
   context = {
     'page_mycatalogs': page_mycatalogs,
-    'filter': strFilter 
+    'filter': strFilter,
+    'user': request.user 
   }
   return HttpResponse(template.render(context, request))
 
@@ -68,15 +74,16 @@ def handle_uploaded_file(f):
         new_object = Catalog(name = elem['name'], title = elem['title'])
         new_object.save()
     file.close()    
-    os.remove(f"{file.name}")        
+    os.remove(f"{settings.MEDIA_ROOT}/{f.name}")        
 
 def SaveExcell(request):
     wb = Workbook()
     sheet = wb.active
     sheet.title = "Пословицы"
-    catalog = mycatalogs = Catalog.objects.all()
+    strFilter = str(request.GET.get("filter") or "")
+    mycatalog = getCatalogByFilter(strFilter, request.get_host() )
     i = 1
-    for elem in catalog:
+    for elem in mycatalog:
         sheet['A'+str(i)] = elem.name
         sheet['B'+str(i)] = elem.title
         i = i + 1
@@ -119,7 +126,11 @@ class CatalogAPI(APIView):
         article.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+#Special functions -----------------------------------------------------------------------------------------    
+def getCatalogByFilter(strFilter: str = "", hostname: str = 'localhost'):
+
+    if hostname == 'localhost':
+      return Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
+    else:    
+      return Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
     
-def main(request):
-  template = loader.get_template('main.html')
-  return HttpResponse(template.render())    
