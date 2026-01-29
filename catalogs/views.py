@@ -27,7 +27,7 @@ def catalogs(request):
 #   else:    
 #       mycatalogs = Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
 
-  paginator = Paginator(mycatalog, 10)  
+  paginator = Paginator(mycatalog, 9)  
   page_number = request.GET.get("page") or 1
   page_mycatalogs = paginator.get_page(page_number)
   
