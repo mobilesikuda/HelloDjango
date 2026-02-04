@@ -22,11 +22,6 @@ def catalogs(request):
   strFilter = str(request.GET.get("filter") or "")
   mycatalog = getCatalogByFilter(strFilter, request.get_host() )
 
-#   if request.get_host() == 'localhost':
-#       mycatalogs = Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
-#   else:    
-#       mycatalogs = Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
-
   paginator = Paginator(mycatalog, 9)  
   page_number = request.GET.get("page") or 1
   page_mycatalogs = paginator.get_page(page_number)
@@ -83,7 +78,7 @@ def SaveExcell(request):
     strFilter = str(request.GET.get("filter") or "")
     mycatalog = getCatalogByFilter(strFilter, request.get_host() )
     i = 1
-    for elem in mycatalog:
+    for elem in mycatalog.all():
         sheet['A'+str(i)] = elem.name
         sheet['B'+str(i)] = elem.title
         i = i + 1
@@ -129,8 +124,9 @@ class CatalogAPI(APIView):
 #Special functions -----------------------------------------------------------------------------------------    
 def getCatalogByFilter(strFilter: str = "", hostname: str = 'localhost'):
 
-    if hostname == 'localhost':
-      return Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
-    else:    
-      return Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
+    # if hostname == 'localhost':
+    #    return Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
+    # else:    
+    return Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
+
     
