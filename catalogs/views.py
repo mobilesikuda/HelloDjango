@@ -83,9 +83,9 @@ def SaveExcell(request):
         sheet['B'+str(i)] = elem.title
         i = i + 1
     
-    wb.save('Catalogs.xlsx')
-    return FileResponse(open("Catalogs.xlsx", "rb"))
-
+    strFile = f"{settings.MEDIA_ROOT}/Catalogs.xlsx"
+    wb.save(strFile)
+    return FileResponse(open(strFile, "rb"))
 
 class CatalogAPI(APIView):
     def get(self, request, format=None):
