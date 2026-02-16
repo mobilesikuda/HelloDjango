@@ -12,6 +12,7 @@ from .serializers import CatalogSerializer
 from openpyxl import Workbook
 import os
 from django.conf import settings
+from django.contrib.auth.decorators import permission_required
 
 def main(request):
   template = loader.get_template('main.html')
@@ -93,6 +94,7 @@ class CatalogAPI(APIView):
         serializer = CatalogSerializer(articles, many=True)
         return Response(serializer.data)
 
+    @permission_required('catalogs.can_edit')
     def post(self, request, format=None):
         serializer = CatalogSerializer(data=request.data)
         if serializer.is_valid():
@@ -100,7 +102,9 @@ class CatalogAPI(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    permission_required('catalogs.can_edit')
     def put(self, request, pk, *args, **kwargs):
+
         try:
             article = Catalog.objects.get(pk=pk)
         except Catalog.DoesNotExist:
@@ -112,6 +116,7 @@ class CatalogAPI(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    permission_required('catalogs.can_edit')
     def delete(self, request, pk, *args, **kwargs):
         try:
             article = Catalog.objects.get(pk=pk)
@@ -124,9 +129,6 @@ class CatalogAPI(APIView):
 #Special functions -----------------------------------------------------------------------------------------    
 def getCatalogByFilter(strFilter: str = "", hostname: str = 'localhost'):
 
-    # if hostname == 'localhost':
-    #    return Catalog.objects.filter(Q(name__iregex=strFilter) | Q(title__iregex=strFilter)).order_by('name') 
-    # else:    
     return Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
 
     
