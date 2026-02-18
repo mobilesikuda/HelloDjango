@@ -90,8 +90,10 @@ def SaveExcell(request):
 
 class CatalogAPI(APIView):
     def get(self, request, format=None):
-        articles = Catalog.objects.all()
-        serializer = CatalogSerializer(articles, many=True)
+        #articles = Catalog.objects.all()
+        strFilter = str(request.GET.get("filter") or "")
+        mycatalog = getCatalogByFilter(strFilter, request.get_host() )
+        serializer = CatalogSerializer(mycatalog, many=True)
         return Response(serializer.data)
 
     @permission_required('catalogs.can_edit')
@@ -106,11 +108,11 @@ class CatalogAPI(APIView):
     def put(self, request, pk, *args, **kwargs):
 
         try:
-            article = Catalog.objects.get(pk=pk)
+            proverb = Catalog.objects.get(pk=pk)
         except Catalog.DoesNotExist:
             return Response({'error': 'Article not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = CatalogSerializer(article, data=request.data, partial=True)
+        serializer = CatalogSerializer(proverb, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -119,16 +121,17 @@ class CatalogAPI(APIView):
     permission_required('catalogs.can_edit')
     def delete(self, request, pk, *args, **kwargs):
         try:
-            article = Catalog.objects.get(pk=pk)
+            proverb = Catalog.objects.get(pk=pk)
         except Catalog.DoesNotExist:
             return Response({'error': 'Article not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        article.delete()
+        proverb.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 #Special functions -----------------------------------------------------------------------------------------    
-def getCatalogByFilter(strFilter: str = "", hostname: str = 'localhost'):
-
+def getCatalogByFilter(strFilter: str = ""):
     return Catalog.objects.filter(Q(name__icontains=strFilter) | Q(title__icontains=strFilter)).order_by('name') 
+
+
 
     
