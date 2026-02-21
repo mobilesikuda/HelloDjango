@@ -21,7 +21,7 @@ def main(request):
 def catalogs(request):
 
   strFilter = str(request.GET.get("filter") or "")
-  mycatalog = getCatalogByFilter(strFilter, request.get_host() )
+  mycatalog = getCatalogByFilter(strFilter)
 
   paginator = Paginator(mycatalog, 9)  
   page_number = request.GET.get("page") or 1
@@ -77,7 +77,7 @@ def SaveExcell(request):
     sheet = wb.active
     sheet.title = "Пословицы"
     strFilter = str(request.GET.get("filter") or "")
-    mycatalog = getCatalogByFilter(strFilter, request.get_host() )
+    mycatalog = getCatalogByFilter(strFilter)
     i = 1
     for elem in mycatalog.all():
         sheet['A'+str(i)] = elem.name
@@ -92,7 +92,7 @@ class CatalogAPI(APIView):
     def get(self, request, format=None):
         #articles = Catalog.objects.all()
         strFilter = str(request.GET.get("filter") or "")
-        mycatalog = getCatalogByFilter(strFilter, request.get_host() )
+        mycatalog = getCatalogByFilter(strFilter)
         serializer = CatalogSerializer(mycatalog, many=True)
         return Response(serializer.data)
 
